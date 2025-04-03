@@ -465,9 +465,6 @@ Note:
 
       return (parsed, usage)
 
-````
-
-
 ```python
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
@@ -487,7 +484,7 @@ with ThreadPoolExecutor() as executor:
             desc="Processing stories",
         )
     )
-````
+```
 
 ```python
 cleaned_clusters = []
@@ -589,11 +586,11 @@ def final_process_story(title: str, articles_ids: list[int]):
     story_article_md = story_article_md.strip()
 
     pre_prompt = """
-You are a highly skilled intelligence analyst working for a prestigious agency. Your task is to analyze a cluster of related news articles and extract structured information for an executive intelligence report. The quality, accuracy, precision, and **consistency** of your analysis are crucial, as this report will directly inform a high-level daily brief and potentially decision-making.
+You are a highly skilled financial intelligence analyst working for a prestigious investment firm. Your task is to analyze a cluster of related financial news articles and extract structured information for an executive market report. The quality, accuracy, precision, and **consistency** of your analysis are crucial, as this report will directly inform a high-level daily market brief and potentially investment decision-making.
 
 First, assess if the articles provided contain sufficient content for analysis:
 
-Here is the cluster of related news articles you need to analyze:
+Here is the cluster of related financial news articles you need to analyze:
 
 <articles>
 """.strip()
@@ -619,11 +616,11 @@ If ANY of these conditions are true, return ONLY this JSON structure inside <fin
 
 ONLY IF the articles contain sufficient information for analysis, proceed with the full analysis below:
 
-Your goal is to extract and synthesize information from these articles into a structured format suitable for generating a daily intelligence brief.
+Your goal is to extract and synthesize information from these articles into a structured format suitable for generating a daily financial intelligence brief.
 
 Before addressing the main categories, conduct a preliminary analysis:
-a) List key themes across all articles
-b) Note any recurring names, places, or events
+a) List key market themes across all articles
+b) Note any recurring companies, assets, market indicators, or financial events
 c) Identify potential biases or conflicting information
 It's okay for this section to be quite long as it helps structure your thinking.
 
@@ -631,29 +628,29 @@ Then, after your preliminary analysis, present your final analysis in a structur
 
 **Detailed Instructions for JSON Fields:**
 
-*   **`executiveSummary`**: Provide a 2-4 sentence concise summary highlighting the most critical developments, key conflicts, and overall assessment from the articles. This should be suitable for a quick read in a daily brief.
-*   **`storyStatus`**: Assess the current state of the story's development based *only* on the information in the articles. Use one of: 'Developing', 'Escalating', 'De-escalating', 'Concluding', 'Static'.
-*   **`timeline`**: List key events in chronological order.
-    *   `description`: Keep descriptions brief and factual.
-    *   `importance`: Assess the event's importance to understanding the overall narrative (High/Medium/Low). High importance implies the event is central to the story's development or outcome.
-*   **`signalStrength`**: Assess the overall reliability of the reporting *in this cluster*.
+*   **`executiveSummary`**: Provide a 2-4 sentence concise summary highlighting the most critical financial developments, key market impacts, and overall assessment from the articles. This should be suitable for a quick read in a daily brief.
+*   **`storyStatus`**: Assess the current state of the market story's development based *only* on the information in the articles. Use one of: 'Developing', 'Escalating', 'De-escalating', 'Concluding', 'Static'.
+*   **`timeline`**: List key financial events in chronological order.
+    *   `description`: Keep descriptions brief and factual, including relevant market data/numbers where available.
+    *   `importance`: Assess the event's importance to understanding the overall market narrative (High/Medium/Low). High importance implies the event is central to the market development or outcome.
+*   **`signalStrength`**: Assess the overall reliability of the financial reporting *in this cluster*.
     *   `assessment`: Use a qualitative term: 'Very High', 'High', 'Moderate', 'Low', 'Very Low'.
-    *   `reasoning`: Justify the assessment based on source corroboration (how many sources report the same core facts?), source quality/reliability (mix of reputable vs. biased sources?), presence of official statements, and degree of conflicting information on core facts.
-*   **`undisputedKeyFacts`**: List core factual points that are corroborated across multiple, generally reliable sources within the cluster. Avoid claims made only by highly biased sources unless corroborated.
-*   **`keyEntities`**: Identify the main actors.
-    *   `list`: Provide basic identification and their role/involvement.
-    *   `perspectives.statedPositions`: Focus *only* on the goals, viewpoints, or justifications explicitly stated or clearly implied by the entity *as reported in the articles*. Avoid listing conflicting claims here (that goes in `contradictions`).
-*   **`keySources`**: Analyze the provided news sources.
-    *   `provided_articles_sources.reliabilityAssessment`: Assess the source's general reliability based on reputation, known biases (political, state affiliation, ideological), and fact-checking standards. Use terms like 'High Reliability', 'Moderate Reliability', 'Low Reliability', 'State-Affiliated/Propaganda Outlet'. Be specific about the *type* of bias.
-    *   `provided_articles_sources.framing`: Describe the narrative angle or style used by the source (e.g., 'Emphasizes security threat', 'Focuses on human rights angle', 'Uses neutral language', 'Uses loaded/emotional language', 'Presents government narrative uncritically').
+    *   `reasoning`: Justify the assessment based on source corroboration (how many sources report the same core facts?), source quality/reliability (mix of reputable vs. biased financial sources?), presence of official statements, and degree of conflicting information on core facts.
+*   **`undisputedKeyFacts`**: List core factual points that are corroborated across multiple, generally reliable financial sources within the cluster. Include specific numbers, data points and financial metrics where available.
+*   **`keyEntities`**: Identify the main financial actors.
+    *   `list`: Provide basic identification and their role/involvement (companies, regulators, financial institutions, key executives, etc.).
+    *   `perspectives.statedPositions`: Focus *only* on the market views, financial goals, or justifications explicitly stated or clearly implied by the entity *as reported in the articles*. Avoid listing conflicting claims here (that goes in `contradictions`).
+*   **`keySources`**: Analyze the provided financial news sources.
+    *   `provided_articles_sources.reliabilityAssessment`: Assess the source's general reliability based on reputation in financial reporting, known biases (political, institutional affiliation, ideological), and fact-checking standards. Use terms like 'High Reliability', 'Moderate Reliability', 'Low Reliability'. Be specific about the *type* of bias.
+    *   `provided_articles_sources.framing`: Describe the narrative angle or style used by the source (e.g., 'Emphasizes market risk', 'Focuses on regulatory angle', 'Uses neutral language', 'Uses loaded/emotional language', 'Presents corporate narrative uncritically').
     *   `contradictions`: Detail specific points of disagreement *between sources* or *between entities as reported by sources*.
-        *   `issue`: Clearly state what is being contested.
-        *   `conflictingClaims`: List the different versions, specifying the `source` reporting it, the `claim` itself, and optionally the `entityClaimed` if the source attributes the claim to a specific entity. Critically evaluate claims originating solely from low-reliability/propaganda sources.
-*   **`context`**: List essential background information *mentioned or clearly implied in the articles* needed to understand the story.
-*   **`informationGaps`**: Identify crucial pieces of information *missing* from the articles that would be needed for a complete understanding.
-*   **`significance`**: Assess the overall importance of the reported events.
+        *   `issue`: Clearly state what financial information or market assessment is being contested.
+        *   `conflictingClaims`: List the different versions, specifying the `source` reporting it, the `claim` itself, and optionally the `entityClaimed` if the source attributes the claim to a specific entity.
+*   **`context`**: List essential financial background information *mentioned or clearly implied in the articles* needed to understand the market story.
+*   **`informationGaps`**: Identify crucial pieces of financial information *missing* from the articles that would be needed for a complete market understanding.
+*   **`significance`**: Assess the overall importance of the reported financial events.
     *   `assessment`: Use a qualitative term: 'Critical', 'High', 'Moderate', 'Low'.
-    *   `reasoning`: Explain *why* this story matters. Consider immediate impact, potential future developments, strategic implications, precedent setting, regional/global relevance.
+    *   `reasoning`: Explain *why* this market story matters. Consider immediate market impact, potential future market developments, sector/industry implications, precedent setting, and broader economic relevance.
 
 **Refined JSON Structure to Follow:**
 
@@ -782,9 +779,6 @@ Return your complete response, including your preliminary analysis/thinking in a
 
     return answer, usage
 
-````
-
-
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -805,7 +799,7 @@ with ThreadPoolExecutor() as executor:
     # collect results as they complete using tqdm for progress
     for future in tqdm(as_completed(futures), total=len(futures)):
         cluster_analysis.append(future.result())
-````
+```
 
 ````python
 from json_repair import repair_json
@@ -1038,27 +1032,26 @@ print(latest_report)
 ```
 
 ```python
-
 def get_brief_prompt(curated_news: str):
     prompt = f"""
-hey, i have a bunch of news reports (in random order) derived from detailed analyses of news clusters from the last 30h. could you give me my personalized daily intelligence brief? aim for something comprehensive yet engaging, roughly a 20-30 minute read.
+hey, i have a bunch of news reports (in random order) derived from detailed analyses of news clusters from the last 30h. could you give me my personalized daily financial and stock market intelligence brief? aim for something comprehensive yet engaging, roughly a 20-30 minute read.
 
-my interests are: significant world news (geopolitics, politics, finance, economics), us news, france news (i'm french/live in france), china news (especially policy, economy, tech - seeking insights often missed in western media), and technology/science (ai/llms, biomed, space, real breakthroughs). also include a section for noteworthy items that don't fit neatly elsewhere.
+my interests are: financial markets (stocks, bonds, commodities, forex), market-moving events, corporate developments (earnings, M&A, leadership changes), economic indicators, monetary policy, fintech, and investment trends. i'm particularly interested in US markets, but also want international market insights, especially from emerging markets and asia.
 
-some context: i built a system that collects/analyzes/compiles news because i was tired of mainstream news that either overwhelms with useless info or misses what actually matters. you're really good at information analysis/writing/etc so i figure by just asking you this i'd get something even better than what presidents get - a focused brief that tells me what's happening, why it matters, and what connections exist that others miss. i value **informed, analytical takes** – even if i don't agree with them, they're intellectually stimulating. i want analysis grounded in the facts provided, free from generic hedging or forced political correctness.
+some context: i built a system that collects/analyzes/compiles financial news because i was tired of mainstream financial news that either overwhelms with useless info or misses what actually matters. you're really good at information analysis/writing/etc so i figure by just asking you this i'd get something even better than what fund managers get - a focused brief that tells me what's happening, why it matters, and what connections exist that others miss. i value **informed, analytical takes** – even if i don't agree with them, they're intellectually stimulating. i want analysis grounded in the facts provided.
 
 your job: go through all the curated news data i've gathered below. analyze **everything** first to identify what *actually* matters before writing. look for:
 - actual significance (not just noise/volume)
-- hidden patterns and connections between stories
+- hidden patterns and connections between market stories
 - important developments flying under the radar
 - how separate events might be related
-- genuinely interesting or impactful stories
+- genuinely interesting or impactful market trends
 
 **--- CONTEXT FROM PREVIOUS DAY (IF AVAILABLE) ---**
 *   You *may* receive a section at the beginning of the curated data titled `## Previous Day's Coverage Context (YYYY-MM-DD)`.
 *   This section provides a highly condensed list of major stories covered yesterday, using the format: `[Story Identifier] | [Last Status] | [Key Entities] | [Core Issue Snippet]`.
 *   **How to Use This Context:** Use this list **only** to understand which topics are ongoing and their last known status/theme. This helps ensure continuity and avoid repeating information already covered.
-*   **Focus on Today:** Your primary task is to synthesize and analyze **today's developments** based on the main `<curated_news_data>`. When discussing a story listed in the previous context, focus on **what is new or has changed today**. Briefly reference the past context *only if essential* for understanding the update (e.g., "Following yesterday's agreement...", "The situation escalated further today when...").
+*   **Focus on Today:** Your primary task is to synthesize and analyze **today's developments** based on the main `<curated_news_data>`. When discussing a story listed in the previous context, focus on **what is new or has changed today**. Briefly reference the past context *only if essential* for understanding the update (e.g., "Following yesterday's Fed announcement...", "The market selloff intensified today when...").
 *   **Do NOT simply rewrite or extensively quote the Previous Day's Coverage Context.** Treat it as background memory.
 **--- END CONTEXT INSTRUCTIONS ---**
 
@@ -1074,41 +1067,37 @@ here's the curated data (each section represents an analyzed news cluster; you m
 
 structure the brief using the sections below, making it feel conversational – complete sentences, natural flow, occasional wry commentary where appropriate.
 <final_brief>
-## what matters now
-cover the *up to* 7-8 most significant stories with real insight. for each:
+## market movers
+cover the *up to* 7-8 most significant market stories with real insight. for each:
 <u>**title that captures the essence**</u>
 weave together what happened, why it matters (significance, implications), key context, and your analytical take in natural, flowing paragraphs.
 separate paragraphs with linebreaks for readability, but ensure smooth transitions.
 blend facts and analysis naturally. **if there isn't much significant development or analysis for a story, keep it brief – don't force length.** prioritize depth and insight where warranted.
-use **bold** for key specifics (names, places, numbers, orgs), *italics* for important context or secondary details.
+use **bold** for key specifics (names, companies, numbers, indexes), *italics* for important context or secondary details.
 offer your **analytical take**: based on the provided facts and context, what are the likely motivations, potential second-order effects, overlooked angles, or inconsistencies? ground this analysis in the data.
 
-## france focus
-(i'm french/live in france)
-significant french developments: policy details, key players, economic data, political shifts.
+## sector spotlight
+focus on 2-3 sectors showing significant activity or noteworthy developments. analyze key companies, competitive dynamics, and sector-specific trends. include quantitative data (performance figures, valuations) where available.
 
-## global landscape
-### power & politics
-key geopolitical moves, focusing on outcomes and strategic implications, including subtle shifts.
+## macro landscape
+### economic indicators
+key economic data releases, monetary policy developments, and their market implications. include the actual numbers and how they compared to expectations where available.
 
-### china monitor
-(seeking insights often missed in western media - skip if nothing significant)
-meaningful policy shifts, leadership dynamics, economic indicators (with numbers if available), tech developments, social trends.
+### global markets
+noteworthy international market developments, focusing on major indices, emerging markets, and cross-border trends that could impact US markets.
 
-### economic currents
-market movements signaling underlying trends, impactful policy decisions, trade/resource developments (with data), potential economic risks or opportunities.
+## corporate developments
+significant company news beyond simple price movements: earnings surprises, M&A activity, management changes, strategic shifts, regulatory issues. prioritize developments with broader market implications.
 
-## tech & science developments
-(focus on ai/llms, space, biomed, real breakthroughs - skip if only minor product news)
-actual breakthroughs, notable ai/llm advancements, significant space news, key scientific progress. separate signal from noise.
+## market technicals & sentiment
+notable technical patterns, significant support/resistance levels, unusual options activity, insider transactions, fund flows, and sentiment indicators. focus on actionable insights, not just descriptions.
 
-## noteworthy & under-reported
+## fintech & market innovation
+developments in financial technology, trading platforms, market structure changes, new financial products, and relevant regulatory developments affecting market function.
+
+## under the radar
 (combine under-reported significance and carte blanche)
-important stories flying under the radar, emerging patterns with specific indicators, slow-burning developments, or other interesting items you think i should see (up to 5 items max).
-
-## positive developments
-(skip if nothing genuinely positive/significant, don't force it)
-actual progress with measurable outcomes, effective solutions, verifiable improvements.
+important market stories flying under the radar, emerging patterns with specific indicators, slow-burning developments, or other interesting items you think i should see (up to 5 items max).
 </final_brief>
 
 use the:
@@ -1132,7 +1121,7 @@ make sure everything inside the <final_brief></final_brief> tags is the actual b
 *   this is for my eyes only - be direct and analytical.
 *   **source reliability:** the input data is derived from analyses that assessed source reliability. use this implicit understanding – give more weight to information from reliable sources and treat claims originating solely from known low-reliability/propaganda sources with appropriate caution in your analysis and 'take'. explicitly mentioning source reliability isn't necessary unless a major contradiction hinges on it.
 *   **writing style:** aim for the tone of an extremely well-informed, analytical friend with a dry wit and access to incredible information processing. be insightful, engaging, and respect my time. make complex topics clear without oversimplifying. integrate facts, significance, and your take naturally.
-*   **leverage your strengths:** process all the info, spot cross-domain patterns, draw on relevant background knowledge (history, economics, etc.), explain clearly, and provide that grounded-yet-insightful analytical layer.
+*   **leverage your strengths:** process all the info, spot cross-domain patterns, draw on relevant background knowledge (finance, economics, etc.), explain clearly, and provide that grounded-yet-insightful analytical layer.
 
 give me the brief i couldn't get before ai - one that combines human-like insight with superhuman information processing.
 """.strip()
@@ -1232,10 +1221,7 @@ messages=[
 temperature=0.0,
 )
 
-````
-
-
-```python
+````python
 brief_title = brief_title_response[0]
 if brief_title.startswith("```json"):
     brief_title = brief_title.split("```json")[1]
